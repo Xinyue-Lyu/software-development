@@ -1,0 +1,231 @@
+/*
+ * Xinyue Lyu
+   This file is used to test if t9 satisfies conditions
+ */
+
+#include "t9_lib.h"
+#include <string.h>
+#include <stdio.h>
+#include "safe_assert.h"
+
+
+void AssertReturnedStringEquals(char* expected, char* actual);
+
+suite("T9") {
+  test("Empty initialization") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+    DestroyT9(dict);
+  }
+
+  test("PredictT9 work correct with InitializeEmptyT9") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    AddWordToT9(dict, "book");
+    AddWordToT9(dict, "cool");
+
+    char* word = PredictT9(dict, "2665#");
+    AssertReturnedStringEquals("cool", word);
+
+    DestroyT9(dict);
+  }
+
+  test("InitializeFromFileT9 with non-null pointer") {
+    const char* validFileName = "text";
+    FILE* file = fopen(validFileName, "w");
+    
+    fprintf(file, "book\ncool\n");
+    fclose(file);
+    T9* dict = InitializeFromFileT9(validFileName);
+    safe_assert(dict != NULL);
+
+    char* word = PredictT9(dict, "2665#");
+    AssertReturnedStringEquals("cool", word);
+  
+    DestroyT9(dict);
+  }
+
+  test("InitializeFromFileT9 with invalid dict content") {
+    const char* validFileName = "text";
+    FILE* file = fopen(validFileName, "w");
+    
+    fprintf(file, "book\nyu77\n");
+    fclose(file);
+    T9* dict = InitializeFromFileT9(validFileName);
+    safe_assert(dict != NULL);
+
+    char* word = PredictT9(dict, "2665");
+    char* w2 = PredictT9(dict, "1234");
+    AssertReturnedStringEquals("book", word);
+    safe_assert(w2==NULL);
+    DestroyT9(dict);
+  }
+
+  test("file is null") {
+    T9* dict = InitializeFromFileT9(NULL);
+    safe_assert(dict == NULL);
+  }
+
+
+
+
+
+
+
+
+  test("word not lowercase") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    AddWordToT9(dict, "bOok");
+
+    char* word = PredictT9(dict, "2665");
+    safe_assert(word == NULL);
+    DestroyT9(dict);
+  }
+
+  test("empty word") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    AddWordToT9(dict, "");
+    
+    char* word = PredictT9(dict, "");
+    safe_assert(word == NULL);
+
+    DestroyT9(dict);
+  }
+
+  test("word already exist") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    AddWordToT9(dict, "book");
+    AddWordToT9(dict, "cool");
+    AddWordToT9(dict, "book");
+    
+    char* word = PredictT9(dict, "2665##");
+    safe_assert(word == NULL);
+    // AssertReturnedStringEquals("cool", word);
+
+    DestroyT9(dict);
+  }
+
+  test("word with symbol *") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    AddWordToT9(dict, "book*");
+
+    char* word = PredictT9(dict, "2665*");
+    safe_assert(word == NULL);
+    DestroyT9(dict);
+  }
+
+  test("similar word") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    AddWordToT9(dict, "word");
+    AddWordToT9(dict, "wordd");
+    
+    char* word = PredictT9(dict, "9673");
+    char* word2 = PredictT9(dict, "96733");
+    
+    AssertReturnedStringEquals("word", word);
+    AssertReturnedStringEquals("wordd", word2);
+
+    DestroyT9(dict);
+  }
+
+
+
+
+  test("list is empty") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    char* word = PredictT9(dict, "2665");
+    safe_assert(word == NULL);
+
+    DestroyT9(dict);
+  }
+
+  test("num is null") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    AddWordToT9(dict, "book");
+    char* word = PredictT9(dict, "");
+    safe_assert(word == NULL);
+    DestroyT9(dict);
+  }
+
+  test("num with things other than # or 0-9") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    AddWordToT9(dict, "book");
+    char* word = PredictT9(dict, "266)");
+    safe_assert(word == NULL);
+    DestroyT9(dict);
+  }
+
+  test("digit after #") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+    AddWordToT9(dict, "book");
+    AddWordToT9(dict, "bookkk");
+    char* word = PredictT9(dict, "2665#5");
+    safe_assert(word == NULL);
+
+    DestroyT9(dict);
+  }
+
+  test("num starts with #") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    AddWordToT9(dict, "book");
+    char* word = PredictT9(dict, "#2665");
+    safe_assert(word == NULL);
+    
+    DestroyT9(dict);
+  }
+
+
+  test("num with  multiple #") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    AddWordToT9(dict, "book");
+    AddWordToT9(dict, "cool");
+    // AddWordToT9(dict, "fool");
+    char* word = PredictT9(dict, "2665##");
+    safe_assert(word == NULL);
+    
+    DestroyT9(dict);
+  }
+
+  test("invalid 0 or * or 1 input") {
+    T9* dict = InitializeEmptyT9();
+    safe_assert(dict != NULL);
+
+    char* word = PredictT9(dict, "2661");
+    char* word2 = PredictT9(dict, "2660");
+    char* word3 = PredictT9(dict, "266*");
+    safe_assert(word == NULL);
+    safe_assert(word2 == NULL);
+    safe_assert(word3 == NULL);
+    
+    DestroyT9(dict);
+  }
+
+}
+
+void AssertReturnedStringEquals(char* expected, char* actual) {
+  safe_assert(actual > 0);
+  safe_assert(strlen(actual) == strlen(expected));
+  safe_assert(strcmp(actual, expected) == 0);
+}

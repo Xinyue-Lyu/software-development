@@ -1,0 +1,18 @@
+CC = gcc
+CFLAGS = -g -Wall -std=c11
+
+all: t9_demo t9_lib.c t9_lib.h t9_priv.h
+
+t9_lib.o: t9_lib.c t9_lib.h t9_priv.h
+	$(CC) $(CFLAGS) -c t9_lib.c 
+
+
+t9_demo.o: t9_demo.c t9_lib.h 
+	$(CC) $(CFLAGS) -c t9_demo.c
+
+
+t9_demo: t9_demo.o t9_lib.o
+	$(CC) $(CFLAGS) -o t9_demo t9_demo.o t9_lib.o
+
+clean:
+	rm -f t9_demo *.o *~
