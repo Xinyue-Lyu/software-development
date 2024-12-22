@@ -27,9 +27,6 @@ Developed a custom command-line utility in C that replicates and extends the fun
 5. **Buffer Safety:**
    - Ensures safe processing of file lines with a predefined buffer size, avoiding memory overflow issues.
 
-6. **Performance Optimization:**
-   - Efficiently parses and tokenizes lines using C string functions to count words and characters.
-
 **Summary Statement:**
 Utilized C programming to develop a robust command-line tool replicating the `wc` command, showcasing skills in file I/O, string manipulation, and error handling. The project aimed to provide detailed file statistics while ensuring reliability and user-friendly features for processing multiple files. Designed and implemented features to handle edge cases, and validate user input.
 ____________________________________________________________________________
